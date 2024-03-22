@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% extends "template.html" %}
+    {% block content %}    
+        <h1> About PAGE </h1>
+        <label for="search">Search:</label>
+        <input type="text" id="search">
+        <button id="apiButton">SEARCH API</button>
+        <button id="apiButtonBACKEND">SEARCH BACKEND</button>
+        
+        <div id="resultContainer"></div>   
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+        <script>
+            document.getElementById('apiButton').addEventListener('click', function() {
+                // Get the search from the textbox
+                var searchText = document.getElementById('search').value;
+                console.log(searchText);
+                // Make API call to Flask backend
+                fetch(`https://api.themoviedb.org/3/search/movie?api_key=ab166ff82684910ae3565621aea04d62&language=en-US&query=${searchText}&page=1&include_adult=false`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the API response
+                        // console.log(data);
+                        var resultContainer = document.getElementById('resultContainer');
+                        let res = "<ul>";
+                        $.each(data.results, function(key, val) {
+                            res += "<li>" + val.original_title + "</li>";
+                        });
+                        res += "</ul>";
+                        resultContainer.innerHTML = res;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error fetching data');
+                    });
+            });
+        </script>      
+        <script>
+            document.getElementById('apiButtonBACKEND').addEventListener('click', function() {
+                // Get the city from the form
+                var searchText = document.getElementById('search').value;
+                
+                // Make API call to Flask backend
+                fetch('/get_movie_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'search': searchText,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Display the API response
+                    console.log(data);
+                    var resultContainer = document.getElementById('resultContainer');
+                    let res = "<ul>";
+                        $.each(data.results, function(key, val) {
+                            res += "<li>" + val.original_title + "</li>";
+                        });
+                        res += "</ul>";
+                        resultContainer.innerHTML = res;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error fetching data');
+                });
+            });
+        </script>              
+    {% endblock %}
+
+
+</body>
+</html>
